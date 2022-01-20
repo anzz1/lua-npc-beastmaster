@@ -18,6 +18,7 @@ local Beastmaster = {
 if (not EnableModule) then return end
 
 require("GossipTextExtension")
+require("ObjectVariables")
 
 local CACHE_NORMAL = 1
 local CACHE_RARE = 2
