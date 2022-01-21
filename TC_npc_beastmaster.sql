@@ -3,6 +3,7 @@
 -- --------------------------------------------------------------------------------------
 SET
 @Entry        := 601026,
+@TrainerEntry := 998,
 @Model        := 26314, -- Northrend Worgen White
 @Name         := "White Fang",
 @Title        := "BeastMaster",
@@ -35,8 +36,24 @@ INSERT INTO world.creature_equip_template (CreatureID, ID, ItemID1, ItemID2, Ite
 -- INSERT INTO `npc_text` (`ID`, `text0_0`) VALUES (@Entry, 'Greetings, $N. If you are looking for a trustful companion on your travels you have come to the right place. I can offer you a variety of tamed pets for you to choose from. If necessary I can also teach you the ways of the hunter so that you can take good care of your pet.');
 
 -- HUNTER TRAINER
+
+DELETE FROM world.trainer_spell WHERE TrainerId=@TrainerEntry;
+INSERT INTO world.trainer_spell (TrainerId, SpellId, MoneyCost, ReqSkillLine, ReqSkillRank, ReqAbility1, ReqAbility2, ReqAbility3, ReqLevel) 
+SELECT @TrainerEntry, SpellId, MoneyCost, ReqSkillLine, ReqSkillRank, ReqAbility1, ReqAbility2, ReqAbility3, ReqLevel FROM world.trainer_spell WHERE TrainerId = 7;
+INSERT INTO world.trainer_spell (TrainerId, SpellId, MoneyCost, ReqSkillLine, ReqSkillRank, ReqAbility1, ReqAbility2, ReqAbility3, ReqLevel) VALUES 
+(@TrainerEntry, 1515, 0, 0, 0, 0, 0, 0, 10), -- Tame Beast
+(@TrainerEntry, 883, 0, 0, 0, 0, 0, 0, 10),  -- Call Pet
+(@TrainerEntry, 2641, 0, 0, 0, 0, 0, 0, 10), -- Dismiss Pet
+(@TrainerEntry, 982, 0, 0, 0, 0, 0, 0, 10),  -- Revive Pet
+(@TrainerEntry, 6991, 0, 0, 0, 0, 0, 0, 10); -- Feed Pet
+DELETE FROM world.trainer WHERE Id=@TrainerEntry;
+INSERT INTO world.trainer (Id, Type, Requirement, Greeting) 
+SELECT @TrainerEntry, Type, Requirement, Greeting FROM world.trainer WHERE Id = 7;
+DELETE FROM world.trainer_locale WHERE Id=@TrainerEntry;
+INSERT INTO world.trainer_locale (Id, locale, Greeting_lang) 
+SELECT @TrainerEntry, locale, Greeting_lang FROM world.trainer_locale WHERE Id = 7;
 DELETE FROM world.creature_default_trainer WHERE CreatureId = @Entry;
-INSERT INTO world.creature_default_trainer (CreatureId, TrainerId) VALUES (@Entry, 7);
+INSERT INTO world.creature_default_trainer (CreatureId, TrainerId) VALUES (@Entry, @TrainerEntry);
 
 -- NPC ITEMS
 DELETE FROM world.npc_vendor WHERE entry = @Entry;
