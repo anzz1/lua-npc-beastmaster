@@ -41,8 +41,13 @@ function Beastmaster.OnHello(event, player, unit)
         player:GossipMenuAddItem(3, "Tame Exotic Beasts", 1, 3)
         player:GossipMenuAddItem(3, "Tame Rare Exotic Beasts", 1, 4)
         player:GossipMenuAddItem(3, "Hunter Training", 1, 5)
-        player:GossipMenuAddItem(0, "I wish to stable my pet.", 1, 6)
-        player:GossipMenuAddItem(1, "Buy Pet Food", 1, 7)
+        player:GossipMenuAddItem(1, "Buy Pet Food", 1, 6)
+        player:GossipMenuAddItem(0, "I wish to stable my pet.", 1, 7)
+        player:GossipMenuAddItem(0, "I wish to unlearn my talents.", 1, 8)
+        player:GossipMenuAddItem(0, "I wish to untrain my pet.", 1, 10)
+        if (not player:HasAchieved(2716)) then
+            player:GossipMenuAddItem(0, "I wish to learn Dual Specialization.", 1, 12, false, "Are you sure you wish to purchase a Dual Talent Specialization?",10000000)
+        end
         player:GossipSendMenu(0x7FFFFFFF, unit)
     else
         local roll = math.random(1, 3)
@@ -85,7 +90,7 @@ function Beastmaster.OnSelect(event, player, unit, sender, intid, code)
                 if (player:GetPetGUID() > 0) then
                     --unit:SendUnitWhisper("First you must abandon or stable your current pet!", 0, player)
                     player:GossipSetText("First you must abandon or stable your current pet!")
-                    player:GossipMenuAddItem(0, "I wish to stable my pet.", 1, 6)
+                    player:GossipMenuAddItem(0, "I wish to stable my pet.", 1, 7)
                     player:GossipMenuAddItem(7, "Back", 1, 9)
                     player:GossipSendMenu(0x7FFFFFFF, unit)
                 else
@@ -102,15 +107,37 @@ function Beastmaster.OnSelect(event, player, unit, sender, intid, code)
         elseif(intid == 5) then
             player:SendTrainerList(unit)
         elseif(intid == 6) then
+            player:SendListInventory(unit)
+        elseif(intid == 7) then
             player:GossipComplete()
             player:CastSpell(player, 63264, true)
             local aura = player:GetAura(63264)
             aura:SetMaxDuration(-1)
             aura:SetDuration(-1)
-        elseif(intid == 7) then
-            player:SendListInventory(unit)
+        elseif(intid == 8) then
+            player:GossipComplete()
+            local packet = CreatePacket(682,12)
+            packet:WriteGUID(unit:GetGUID())
+            packet:WriteULong(player:ResetTalentsCost())
+            player:SendPacket(packet)
         elseif(intid == 9) then -- back button
             Beastmaster.OnHello(1, player, unit)
+        elseif(intid == 10) then
+            player:GossipSetText("You can't teach an old dog new tricks.  At least that's what someone once told me.  Lucky for you, I've discovered it to be untrue.$b$bNow then, would you like your pet to unlearn talents?")
+            player:GossipMenuAddItem(0, "Yes, please do.", 1, 11)
+            player:GossipMenuAddItem(7, "Back", 1, 9)
+            player:GossipSendMenu(0x7FFFFFFF, unit)
+        elseif(intid == 11) then
+            player:ResetPetTalents()
+            player:GossipSetText("Done, your pet has forgot it's tricks.$b$bNow go on to teach it again!")
+            player:GossipSendMenu(0x7FFFFFFF, unit)
+        elseif(intid == 12) then
+            player:GossipComplete()
+            if (not player:HasAchieved(2716)) then
+                player:CastSpell(player, 63680, true) -- Teach Learn Talent Specialization Switches (63680)
+                player:CastSpell(player, 63624, true) -- Learn a Second Talent Specialization (63624)
+                player:ModifyMoney(-10000000)
+            end
         end
     else
         player:GossipComplete()
